@@ -5,9 +5,14 @@ import { getResponseFromAi } from '../utils/getResponseFromAi';
 import systemPrompt from "../utils/systemPrompt"
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*'); // Allow all origins or specify one for security
-  res.setHeader('Access-Control-Allow-Methods', 'DELETE, POST, GET, OPTIONS'); // Allow specific methods
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With'); // Allow specific headers
+  // Handle CORS preflight request (OPTIONS)
+  if (req.method === "OPTIONS") {
+    res.setHeader('Access-Control-Allow-Origin', '*'); // Allow all origins (adjust if necessary)
+    res.setHeader('Access-Control-Allow-Methods', 'DELETE, POST, GET, OPTIONS'); // Allowed methods
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With'); // Allowed headers
+    return res.status(200).end(); // Respond with 200 OK for preflight
+  }
+
   if (req.method !== "POST") return sendError(405, "This endpoint only allows 'POST' requests.", res)
 
   const body: { messages: Message[] } | undefined = req.body;
