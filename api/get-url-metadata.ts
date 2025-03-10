@@ -23,7 +23,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!isValidUrl(body.url)) return sendError(400, "url should be an actual url.", res)
 
   try {
-    const response = await axios.get(body.url);
+    const response = await axios.get(body.url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+      }
+    });
     const $ = cheerio.load(response.data);
 
     const title = $('meta[property="og:title"]').attr('content') || $('title').text();
@@ -40,11 +44,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       webpage_url: baseUrl.hostname,
     })
   } catch (e) {
-    console.error("ERRORR", e.message)
+    const error: Error = e;
+    console.error("ERRORR", error)
 
-    return res.json({
-      error: "occured!"
-    })
+    return sendError(404, "We were unable to retrieve the link metadata. This might be due to restrictions from the website. Please try again later.", res)
+
   }
 
 
